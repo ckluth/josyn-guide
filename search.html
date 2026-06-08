@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Search — JOSYN Guide</title>
   <link rel="stylesheet" href="site.css">
+  <script>var _sw=localStorage.getItem('sidebar-w');if(_sw)document.documentElement.style.setProperty('--sidebar-w',_sw);</script>
 </head>
 <body>
   <button id="nav-toggle" aria-label="Toggle navigation">&#9776;</button>
@@ -89,8 +90,7 @@ document.getElementById('doc-search').addEventListener('input', function() {
     });
 
     var resizer = document.getElementById('sidebar-resizer');
-    var savedW = localStorage.getItem('sidebar-w');
-    if (savedW) document.documentElement.style.setProperty('--sidebar-w', savedW);
+    var resizeW = null;
     resizer.addEventListener('contextmenu', function(e) { e.preventDefault(); });
     resizer.addEventListener('mousedown', function(e) {
       e.preventDefault();
@@ -103,23 +103,23 @@ document.getElementById('doc-search').addEventListener('input', function() {
       document.addEventListener('touchend', stopTouchResize);
     }, { passive: false });
     function onResize(e) {
-      var w = Math.max(160, Math.min(600, e.clientX));
-      document.documentElement.style.setProperty('--sidebar-w', w + 'px');
+      resizeW = Math.max(160, Math.min(600, e.clientX)) + 'px';
+      document.documentElement.style.setProperty('--sidebar-w', resizeW);
     }
     function onTouchResize(e) {
       e.preventDefault();
-      var w = Math.max(160, Math.min(600, e.touches[0].clientX));
-      document.documentElement.style.setProperty('--sidebar-w', w + 'px');
+      resizeW = Math.max(160, Math.min(600, e.touches[0].clientX)) + 'px';
+      document.documentElement.style.setProperty('--sidebar-w', resizeW);
     }
     function stopResize() {
       document.removeEventListener('mousemove', onResize);
       document.removeEventListener('mouseup', stopResize);
-      localStorage.setItem('sidebar-w', getComputedStyle(document.documentElement).getPropertyValue('--sidebar-w').trim());
+      if (resizeW) localStorage.setItem('sidebar-w', resizeW);
     }
     function stopTouchResize() {
       document.removeEventListener('touchmove', onTouchResize);
       document.removeEventListener('touchend', stopTouchResize);
-      localStorage.setItem('sidebar-w', getComputedStyle(document.documentElement).getPropertyValue('--sidebar-w').trim());
+      if (resizeW) localStorage.setItem('sidebar-w', resizeW);
     }
   </script>
   <script src="mermaid.min.js"></script><script>mermaid.initialize({startOnLoad:false,theme:'dark'});mermaid.run({querySelector:'.mermaid'});</script>
