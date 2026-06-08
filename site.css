@@ -147,6 +147,8 @@ a.nav-home.active, a.nav-link.active {
   touch-action: none;
   user-select: none;
   -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 @media (hover: hover) {
