@@ -200,13 +200,27 @@ migration, one job at a time.</p>
       document.addEventListener('mousemove', onResize);
       document.addEventListener('mouseup', stopResize);
     });
+    resizer.addEventListener('touchstart', function(e) {
+      e.preventDefault();
+      document.addEventListener('touchmove', onTouchResize, { passive: false });
+      document.addEventListener('touchend', stopTouchResize);
+    }, { passive: false });
     function onResize(e) {
       var w = Math.max(160, Math.min(600, e.clientX));
+      document.documentElement.style.setProperty('--sidebar-w', w + 'px');
+    }
+    function onTouchResize(e) {
+      e.preventDefault();
+      var w = Math.max(160, Math.min(600, e.touches[0].clientX));
       document.documentElement.style.setProperty('--sidebar-w', w + 'px');
     }
     function stopResize() {
       document.removeEventListener('mousemove', onResize);
       document.removeEventListener('mouseup', stopResize);
+    }
+    function stopTouchResize() {
+      document.removeEventListener('touchmove', onTouchResize);
+      document.removeEventListener('touchend', stopTouchResize);
     }
   </script>
   <script src="../../../../mermaid.min.js"></script><script>mermaid.initialize({startOnLoad:false,theme:'dark'});mermaid.run({querySelector:'.mermaid'});</script>

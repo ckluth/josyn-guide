@@ -148,6 +148,10 @@ a.nav-home.active, a.nav-link.active {
 
 #sidebar-resizer:hover { background: #007acc; }
 
+@media (pointer: coarse) {
+  #sidebar-resizer { width: 16px; margin-left: -6px; }
+}
+
 /* ── Content ────────────────────────────────────────────────── */
 
 main {
