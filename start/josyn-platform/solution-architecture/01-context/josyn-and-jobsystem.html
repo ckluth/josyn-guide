@@ -22,6 +22,7 @@
 </details>
 
   </nav>
+  <div id="sidebar-resizer"></div>
   <main>
     <article>
       <div class="origin">[josyn-platform]/solution-architecture/01-context/josyn-and-jobsystem.md</div><h1 id="josyn-and-its-predecessor">JOSYN and its Predecessor</h1>
@@ -192,6 +193,21 @@ migration, one job at a time.</p>
     document.querySelectorAll('#sidebar a').forEach(function(a) {
       a.addEventListener('click', closeNav);
     });
+
+    var resizer = document.getElementById('sidebar-resizer');
+    resizer.addEventListener('mousedown', function(e) {
+      e.preventDefault();
+      document.addEventListener('mousemove', onResize);
+      document.addEventListener('mouseup', stopResize);
+    });
+    function onResize(e) {
+      var w = Math.max(160, Math.min(600, e.clientX));
+      document.documentElement.style.setProperty('--sidebar-w', w + 'px');
+    }
+    function stopResize() {
+      document.removeEventListener('mousemove', onResize);
+      document.removeEventListener('mouseup', stopResize);
+    }
   </script>
   <script src="../../../../mermaid.min.js"></script><script>mermaid.initialize({startOnLoad:false,theme:'dark'});mermaid.run({querySelector:'.mermaid'});</script>
 </body>
