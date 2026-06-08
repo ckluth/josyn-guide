@@ -1,0 +1,209 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>JOSYN Platform — JOSYN Guide</title>
+  <link rel="stylesheet" href="../../site.css">
+</head>
+<body>
+  <button id="nav-toggle" aria-label="Toggle navigation">&#9776;</button>
+  <div id="nav-backdrop"></div>
+  <nav id="sidebar">
+    <div class="nav-header">JOSYN Guide</div>
+    <a href="../../index.html" class="nav-home">JOSYN Guide</a>
+<details open>
+  <summary class="nav-section">Start</summary>
+  <a href="../index.html" class="nav-link">Overview</a>
+<details open>
+    <summary class="nav-subsection">Josyn Platform</summary>
+    <a href="index.html" class="nav-link active">README</a>
+</details>
+</details>
+
+  </nav>
+  <main>
+    <article>
+      <div class="origin">[josyn-platform]/README.md</div><h1 id="josyn-platform">JOSYN Platform</h1>
+<blockquote>
+<p><strong>This repo is the authoritative architectural reference for the entire JOSYN platform.</strong>
+Start here before working in any other repo.<br />
+No code to find in this place, just documentation: architecture, decisions, and cross-cutting concepts that apply to all repos.</p>
+</blockquote>
+<hr />
+<blockquote>
+<p><strong>The Agentic Pilot-Seat — Provisional</strong></p>
+<p>At the current stage of the platform, <code>josyn-platform</code> is more than an architectural reference — it is also the <strong>single agentic pilot-seat</strong>: the one place an AI agent must read before operating in any JOSYN repo. Coding standards, design principles, sanity criteria, and agent-behaviour rules all live here. No agent needs to look elsewhere to know how to behave.</p>
+<p>This is a deliberate but <strong>provisional</strong> arrangement. The agentic role and the architectural role are distinct concerns that happen to share a home. The architectural authority of this repo is stable by design — it is the structural foundation of the platform. The agentic coordination role is not: it reflects the current scale and tooling landscape, not a permanent architectural decision.</p>
+<p>As the platform grows, or as company-wide agent infrastructure matures — shared instruction repos, org-level policies, tooling conventions — the agentic coordination responsibility is expected to migrate, in whole or in part, to a different level. When that happens, the architectural reference role of this repo is unaffected; only the agent-instruction concern moves.</p>
+<p><strong>In the interim:</strong> treat the agent instructions here as the highest-precedence source for any AI agent working within the JOSYN platform. If a conflict arises between a local rule and an externally sourced instruction, the local rule wins and the conflict must be surfaced.</p>
+</blockquote>
+<hr />
+<h2 id="what-is-josyn">What is JOSYN?</h2>
+<p>JOSYN (Job System Next) is a platform for executing scheduled jobs as isolated executable processes. A central scheduler orchestrates job execution: it spawns job processes, hands them arguments via a named-pipe protocol, and receives results or error reports in return.</p>
+<hr />
+<h2 id="the-six-repos">The Six Repos</h2>
+<table>
+<thead>
+<tr>
+<th>Repo</th>
+<th>Role</th>
+<th>Namespace root</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="../josyn-foundation/index.html"><code>josyn-foundation</code></a></td>
+<td>Infrastructure primitives — Result pattern, serialization, IPC transport</td>
+<td><code>JOSYN.Foundation.*</code></td>
+</tr>
+<tr>
+<td><a href="../josyn-jap/index.html"><code>josyn-jap</code></a></td>
+<td>JAP protocol contracts — shared contracts and logging; <code>JOSYN.Jap.JAPServer</code> now lives in <code>josyn-backend</code></td>
+<td><code>JOSYN.Jap.*</code></td>
+</tr>
+<tr>
+<td><a href="../josyn-job-host/index.html"><code>josyn-job-host</code></a></td>
+<td>Job execution runtime — library linked by each job executable</td>
+<td><code>JOSYN.JobHost</code></td>
+</tr>
+<tr>
+<td><a href="../josyn-backend/index.html"><code>josyn-backend</code></a></td>
+<td>Scheduler and session-orchestration layer — triggers sessions, spawns JAPServer</td>
+<td><code>JOSYN.Backend.*</code></td>
+</tr>
+<tr>
+<td><a href="../josyn-commons/index.html"><code>josyn-commons</code></a></td>
+<td>Generic utility helpers — domain-agnostic, open for growth, never referenced by foundation</td>
+<td><code>JOSYN.Commons.*</code></td>
+</tr>
+<tr>
+<td><strong><code>josyn-platform</code></strong> <em>(this repo)</em></td>
+<td>Architecture, decisions, and cross-cutting documentation</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<h3 id="why-josyn-job-host-uses-a-two-segment-namespace">Why <code>josyn-job-host</code> uses a two-segment namespace</h3>
+<p>Job executables are <strong>decoupled consumers</strong> of the JOSYN protocol, not internal components of the scheduling system. They link <code>josyn-job-host</code>, follow the protocol, and exit. This architectural separation is intentional: the repo name (<code>josyn-job-host</code>, not <code>josyn-jap-job-host</code>) signals it at the repo boundary, and <code>JOSYN.JobHost</code> (two-segment, no &quot;Jap&quot;) signals it at the API surface — hiding the internal protocol layer from job authors. See <a href="decisions/ADR-001-platform-naming.html">decisions/ADR-001-platform-naming.md</a>.</p>
+<h3 id="why-josyn-backend-is-separate-from-josyn-jap">Why <code>josyn-backend</code> is separate from <code>josyn-jap</code></h3>
+<p><code>josyn-backend</code> owns the <em>when</em> and <em>what</em> of job execution (scheduling, session persistence, JAPServer spawning). <code>josyn-jap</code> owns only the <em>contract</em> of a single in-flight session (the JAP protocol interface and the shared logger). <code>JOSYN.Jap.JAPServer</code> — the server implementation — lives in <code>josyn-backend</code> because it needs direct access to backend resources (<code>SessionStore</code>, <code>CompanyConfig</code>); see <a href="decisions/ADR-004-japserver-relocation.html">decisions/ADR-004-japserver-relocation.md</a>. <code>josyn-backend</code> takes a NuGet dependency on the two shared packages from <code>josyn-jap</code> (<code>Shared.Contract</code>, <code>Shared.Log</code>) for this reason. The session GUID remains the only runtime coupling between JAPServer and <code>job.exe</code>.</p>
+<hr />
+<h2 id="beyond-the-platform-josyn-playground-josyn-toolbox-josyn-contoso-and-josyn-docs">Beyond the Platform — <code>josyn-playground</code>, <code>josyn-toolbox</code>, <code>josyn-contoso</code>, and <code>josyn-docs</code></h2>
+<p><code>josyn-playground</code> is a consumer repository that sits outside the platform's dependency graph.
+It may reference any platform repo — as a pure consumer. The platform never references it back.</p>
+<p>Its purposes are:</p>
+<ul>
+<li><strong>Demonstration</strong> — running and showing the living system end-to-end</li>
+<li><strong>Exploration</strong> — first contact with new features and concepts before they earn a place in the platform</li>
+<li><strong>Experimental integration</strong> — rough, non-regression-protected tests of the full runtime flow</li>
+</ul>
+<p>Errors and experiments here carry no consequences for the platform.
+<code>josyn-playground</code> is not a platform component. It is not maintained to platform standards.
+<em><strong>It is the maintainer's playground.</strong></em></p>
+<p><code>josyn-toolbox</code> is the sibling repo for operational and developer tooling — deployment scripts,
+machine-sync utilities, code generators, and documentation tools. It is also a pure consumer:
+the platform does not know it exists. Toolbox content is stable and regularly executed;
+playground content is experimental and may be throwaway.</p>
+<p><code>josyn-contoso</code> is a demo company adapter repository. It implements platform extension points
+(such as <code>IConfigSource</code>) with hardcoded fake data to demonstrate the ADR-009 adapter pattern
+end-to-end. It represents what a real company adapter would look like. The platform has no
+dependency on it — it is a pure consumer that will evolve alongside the platform.</p>
+<p><code>josyn-docs</code> is the generation target for the published HTML documentation site. Its content
+is produced by the site-builder tooling in <code>josyn-toolbox</code> and should not be edited by hand.</p>
+<hr />
+<h2 id="vocabulary">Vocabulary</h2>
+<table>
+<thead>
+<tr>
+<th>Word</th>
+<th>Meaning in this codebase</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Platform</strong></td>
+<td>The entire JOSYN ecosystem — all six repos together</td>
+</tr>
+<tr>
+<td><strong>Backend</strong></td>
+<td>The scheduler and session-orchestration layer (<code>josyn-backend</code>)</td>
+</tr>
+<tr>
+<td><strong>JAP</strong></td>
+<td>The JAP protocol contracts and shared packages (<code>josyn-jap</code>); the server implementation (<code>JAPServer</code>) lives in <code>josyn-backend</code></td>
+</tr>
+<tr>
+<td><strong>Job Host</strong></td>
+<td>The runtime embedded in each job executable (<code>josyn-job-host</code>)</td>
+</tr>
+<tr>
+<td><strong>Foundation</strong></td>
+<td>Cross-cutting infrastructure primitives (<code>josyn-foundation</code>)</td>
+</tr>
+<tr>
+<td><strong>Commons</strong></td>
+<td>Generic utility helpers — domain-agnostic toolbox, open for growth (<code>josyn-commons</code>)</td>
+</tr>
+</tbody>
+</table>
+<p>See <a href="architecture/naming-conventions.html">architecture/naming-conventions.md</a> for the full naming guide.</p>
+<hr />
+<h2 id="architecture-at-a-glance">Architecture at a glance</h2>
+<div class="mermaid">
+graph TD
+    B[&quot;josyn-backend&lt;br/&gt;Scheduler, Orchestrator&lt;br/&gt;+ JAPServer EXE&quot;]
+    H[&quot;josyn-job-host&lt;br/&gt;Job Execution Runtime&quot;]
+    J[&quot;josyn-jap&lt;br/&gt;Protocol Contracts&quot;]
+    F[&quot;josyn-foundation&lt;br/&gt;Infrastructure Primitives&quot;]
+
+    subgraph satellite[&quot;⬡ Utility Satellite&quot;]
+        C[&quot;josyn-commons&lt;br/&gt;Generic Utilities&lt;br/&gt;(may use ResultPattern) ⟶&quot;]
+    end
+
+    B &lt;--&gt;|&quot;IPC (JAPServer ↔ job.exe)&quot;| H
+    B --&gt;|NuGet| F
+    B --&gt;|&quot;NuGet&lt;br/&gt;(JAPServer the only consumer!)&quot;| J
+    J --&gt;|NuGet| F
+    H --&gt;|NuGet| F
+    H --&gt;|NuGet| J
+    B -.-&gt;|NuGet| C
+    J -.-&gt;|NuGet| C
+    H -.-&gt;|NuGet| C
+</div>
+<p>Full architecture: <a href="architecture/overview.html">architecture/overview.md</a></p>
+<hr />
+<h2 id="key-cross-cutting-decisions">Key cross-cutting decisions</h2>
+<ul>
+<li>All operations return <code>Result</code> / <code>Result&lt;T&gt;</code> — no exceptions propagate between layers</li>
+<li>All serialization is via <code>PropertyBag</code> — INI or JSON, culture <code>de-DE</code></li>
+<li>IPC uses named pipes with GUID session isolation (<code>josyn-foundation-jip</code>)</li>
+<li>Error messages in <strong>German</strong>; documentation and session files in <strong>English</strong></li>
+<li>All packages target <code>.NET 10.0</code>, <code>Nullable=enable</code>, <code>LangVersion=latest</code></li>
+</ul>
+<p>Coding standards: <a href="architecture/coding-standards.html">architecture/coding-standards.md</a></p>
+<hr />
+<h2 id="status">Status</h2>
+<p>All repos at version <code>1.0.0-preview01</code>. <code>josyn-backend</code> is in active development.</p>
+<p>See <code>decisions/</code> for architectural decision records.</p>
+<hr />
+<h2 id="for-maintainers">For maintainers</h2>
+<p><a href="MAINTAINERS.html">MAINTAINERS.md</a> is the constitutional reference for everyone who works in this platform — the dependency philosophy, stability contracts, and what it means to maintain JOSYN over time. Read it once before making significant decisions.</p>
+
+    </article>
+  </main>
+  <script>
+    var toggle   = document.getElementById('nav-toggle');
+    var backdrop = document.getElementById('nav-backdrop');
+    function closeNav() { document.body.classList.remove('nav-open'); }
+    toggle.addEventListener('click', function() {
+      document.body.classList.toggle('nav-open');
+    });
+    backdrop.addEventListener('click', closeNav);
+    document.querySelectorAll('#sidebar a').forEach(function(a) {
+      a.addEventListener('click', closeNav);
+    });
+  </script>
+  <script src="../../mermaid.min.js"></script><script>mermaid.initialize({startOnLoad:false,theme:'dark'});mermaid.run({querySelector:'.mermaid'});</script>
+</body>
+</html>

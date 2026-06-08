@@ -1,0 +1,92 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Search — JOSYN Guide</title>
+  <link rel="stylesheet" href="site.css">
+</head>
+<body>
+  <button id="nav-toggle" aria-label="Toggle navigation">&#9776;</button>
+  <div id="nav-backdrop"></div>
+  <nav id="sidebar">
+    <div class="nav-header">JOSYN Guide</div>
+    <a href="index.html" class="nav-home">JOSYN Guide</a>
+<details>
+  <summary class="nav-section">Start</summary>
+  <a href="start/index.html" class="nav-link">Overview</a>
+<details>
+    <summary class="nav-subsection">Josyn Platform</summary>
+    <a href="start/josyn-platform/index.html" class="nav-link">README</a>
+</details>
+</details>
+
+  </nav>
+  <main>
+    <article>
+      <h1 id="search">Search</h1>
+<p><input type="text" id="doc-search"
+placeholder="Filter by title, summary, or repo…"
+style="width:100%;padding:8px;font-size:1rem;margin-bottom:1.5rem;border:1px solid #ccc;border-radius:4px" /></p>
+<table>
+<thead>
+<tr>
+<th>Document</th>
+<th>Repo</th>
+<th>Type</th>
+<th>Summary</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="start/josyn-platform/solution-architecture/01-context/josyn-and-jobsystem.html">JOSYN and its Predecessor</a></td>
+<td>josyn-platform</td>
+<td>solution-architecture</td>
+<td>Explains JOSYN’s purpose and its relationship to the legacy JobSystem.</td>
+</tr>
+<tr>
+<td><a href="start/josyn-platform/index.html">JOSYN Platform</a></td>
+<td>josyn-platform</td>
+<td>overview</td>
+<td>Introduces JOSYN, its repositories, architecture, and this repo’s authority.</td>
+</tr>
+<tr>
+<td><a href="start/josyn-platform/MAINTAINERS.html">JOSYN Platform — Maintainer's Guide</a></td>
+<td>josyn-platform</td>
+<td>reference</td>
+<td>States the enduring architectural responsibilities and values for JOSYN maintainers.</td>
+</tr>
+<tr>
+<td><a href="start/josyn-platform/ROADMAP.html">JOSYN Platform — Roadmap &amp; Status</a></td>
+<td>josyn-platform</td>
+<td>plan</td>
+<td>Tracks platform status, milestones, completed work, and likely next steps.</td>
+</tr>
+</tbody>
+</table>
+<script>
+document.getElementById('doc-search').addEventListener('input', function() {
+  var q = this.value.toLowerCase();
+  document.querySelectorAll('table tbody tr').forEach(function(r) {
+    r.style.display = r.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+});
+</script>
+
+    </article>
+  </main>
+  <script>
+    var toggle   = document.getElementById('nav-toggle');
+    var backdrop = document.getElementById('nav-backdrop');
+    function closeNav() { document.body.classList.remove('nav-open'); }
+    toggle.addEventListener('click', function() {
+      document.body.classList.toggle('nav-open');
+    });
+    backdrop.addEventListener('click', closeNav);
+    document.querySelectorAll('#sidebar a').forEach(function(a) {
+      a.addEventListener('click', closeNav);
+    });
+  </script>
+  <script src="mermaid.min.js"></script><script>mermaid.initialize({startOnLoad:false,theme:'dark'});mermaid.run({querySelector:'.mermaid'});</script>
+</body>
+</html>

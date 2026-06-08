@@ -1,0 +1,150 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>JOSYN Platform — Roadmap &amp; Status — JOSYN Guide</title>
+  <link rel="stylesheet" href="../../site.css">
+</head>
+<body>
+  <button id="nav-toggle" aria-label="Toggle navigation">&#9776;</button>
+  <div id="nav-backdrop"></div>
+  <nav id="sidebar">
+    <div class="nav-header">JOSYN Guide</div>
+    <a href="../../index.html" class="nav-home">JOSYN Guide</a>
+<details open>
+  <summary class="nav-section">Start</summary>
+  <a href="../index.html" class="nav-link">Overview</a>
+<details open>
+    <summary class="nav-subsection">Josyn Platform</summary>
+    <a href="index.html" class="nav-link">README</a>
+</details>
+</details>
+
+  </nav>
+  <main>
+    <article>
+      <div class="origin">[josyn-platform]/ROADMAP.md</div><h1 id="josyn-platform-roadmap-status">JOSYN Platform — Roadmap &amp; Status</h1>
+<blockquote>
+<p>The Ariadne thread: where we are, where we came from, where we are going.
+Keep this file honest and current. It is not a specification — it is an orientation.</p>
+</blockquote>
+<hr />
+<h2 id="the-thread">The thread</h2>
+<p>JOSYN is a platform for executing scheduled jobs as isolated, observable processes.
+The goal: a clean, maintainable replacement for legacy job infrastructure — with a proper
+scheduler, a typed argument/result protocol, a persistent session store, and a clear
+separation between platform concerns and job implementation.
+The platform is being built incrementally, with a working round-trip already in place.</p>
+<hr />
+<h2 id="milestones">Milestones</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Name</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>M1</td>
+<td>Foundation &amp; core concepts</td>
+<td>✅ Done</td>
+</tr>
+<tr>
+<td>M2</td>
+<td>Working round-trip — first Contoso job on a deployed system</td>
+<td>✅ Done</td>
+</tr>
+<tr>
+<td>M3</td>
+<td>Scheduling — listener, ticker, time-based triggers</td>
+<td>⬜ Upcoming</td>
+</tr>
+<tr>
+<td>M4</td>
+<td>Full job lifecycle — migration, workflow support</td>
+<td>⬜ Upcoming</td>
+</tr>
+<tr>
+<td>M5</td>
+<td>Production-ready platform</td>
+<td>⬜ Upcoming</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="whats-done">What's done</h2>
+<ul>
+<li>Solid repo structure across all JOSYN repositories</li>
+<li>Extensive documentation — architecture, coding standards, decisions, repo summaries</li>
+<li>Core technical architecture defined and documented</li>
+<li>Strong set of coding principles, enforced via sanity checks</li>
+<li><code>josyn-foundation</code> — settled: Result pattern, serialization, IPC transport</li>
+<li><code>josyn-jap</code> — JAP protocol contracts and logging</li>
+<li><code>josyn-job-host</code> — job execution runtime with arguments and result as basic features</li>
+<li><code>josyn-backend</code> — growing: session store, error handler, job registry, session starter, backend CLI (first working implementation)</li>
+<li><code>josyn-contoso</code> — Contoso adapter in place (no real data population yet)</li>
+<li>Working end-to-end round-trip: a Contoso job spawned, executed, and reported by a deployed system</li>
+<li>Database in place</li>
+</ul>
+<hr />
+<h2 id="whats-in-progress">What's in progress</h2>
+<ul>
+<li>Backend CLI — first implementation done, must evolve</li>
+<li>Solution architecture documentation — large sections are still placeholders</li>
+<li>Documentation index tooling (<code>docs-index-builder</code>, AI enrichment pass pending)</li>
+</ul>
+<hr />
+<h2 id="whats-next">What's next</h2>
+<ul>
+<li>Complete the solution architecture documentation</li>
+<li>Implement listener and ticker</li>
+<li>Time-based scheduling</li>
+<li>Run AI enrichment pass on the documentation index</li>
+</ul>
+<hr />
+<h2 id="parked-out-of-scope-for-now">Parked / out of scope (for now)</h2>
+<ul>
+<li>Workflow support (multi-step jobs)</li>
+<li>Migration path from old jobs to the new platform</li>
+<li>Many <code>josyn-job-host</code> features beyond arguments/result basics</li>
+</ul>
+<hr />
+<h2 id="open-documentation-items">Open documentation items</h2>
+<p>Things that exist in the codebase but are not yet properly documented.
+Work these off before a public release.</p>
+<ul>
+<li><p><strong><code>josyn-backend</code> undocumented components</strong> — five packages exist with no entry in
+<code>repos/josyn-backend/overview.md</code>:</p>
+<ul>
+<li><code>JOSYN.Backend.CLI</code> (<code>josyn-backend-cli</code>)</li>
+<li><code>JOSYN.Backend.Listener</code> (<code>josyn-backend-listener</code>)</li>
+<li><code>JOSYN.Backend.Ticker</code> (<code>josyn-backend-ticker</code>)</li>
+<li><code>JOSYN.Backend.ConfigStore</code> (<code>josyn-backend-config-store</code>)</li>
+<li><code>JOSYN.Backend.AdapterContracts</code> (<code>josyn-backend-adapter-contracts</code>)
+Each needs a component description, dependency list, and sanity notes entry.</li>
+</ul>
+</li>
+<li><p><strong><code>josyn-contoso</code></strong> — exists and works; no <code>repos/josyn-contoso.md</code> yet.</p>
+</li>
+</ul>
+
+    </article>
+  </main>
+  <script>
+    var toggle   = document.getElementById('nav-toggle');
+    var backdrop = document.getElementById('nav-backdrop');
+    function closeNav() { document.body.classList.remove('nav-open'); }
+    toggle.addEventListener('click', function() {
+      document.body.classList.toggle('nav-open');
+    });
+    backdrop.addEventListener('click', closeNav);
+    document.querySelectorAll('#sidebar a').forEach(function(a) {
+      a.addEventListener('click', closeNav);
+    });
+  </script>
+  <script src="../../mermaid.min.js"></script><script>mermaid.initialize({startOnLoad:false,theme:'dark'});mermaid.run({querySelector:'.mermaid'});</script>
+</body>
+</html>

@@ -1,0 +1,220 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>JOSYN Platform — Maintainer&#39;s Guide — JOSYN Guide</title>
+  <link rel="stylesheet" href="../../site.css">
+</head>
+<body>
+  <button id="nav-toggle" aria-label="Toggle navigation">&#9776;</button>
+  <div id="nav-backdrop"></div>
+  <nav id="sidebar">
+    <div class="nav-header">JOSYN Guide</div>
+    <a href="../../index.html" class="nav-home">JOSYN Guide</a>
+<details open>
+  <summary class="nav-section">Start</summary>
+  <a href="../index.html" class="nav-link">Overview</a>
+<details open>
+    <summary class="nav-subsection">Josyn Platform</summary>
+    <a href="index.html" class="nav-link">README</a>
+</details>
+</details>
+
+  </nav>
+  <main>
+    <article>
+      <div class="origin">[josyn-platform]/MAINTAINERS.md</div><h1 id="josyn-platform-maintainers-guide">JOSYN Platform — Maintainer's Guide</h1>
+<h2 id="a-letter-to-whoever-maintains-this-next"><em>A Letter to Whoever Maintains This Next</em></h2>
+<p>This file is the constitutional reference for everyone who works in the JOSYN platform —
+today, and in the years to come.</p>
+<p>Read it once. Return to it when decisions get hard.</p>
+<hr />
+<h2 id="what-we-are-building">What we are building</h2>
+<p>JOSYN is a platform for executing scheduled jobs as isolated, autonomous processes.
+It is not a framework. It is not a library. It is an architecture — a set of repos,
+contracts, and conventions that work together because they were designed to.</p>
+<p>The platform is small by intention. Every layer exists because it earned its place.
+Every boundary exists because it protects something worth protecting.</p>
+<hr />
+<h2 id="the-dependency-graph-is-the-architecture">The dependency graph is the architecture</h2>
+<p>In JOSYN, the structure of who depends on whom is not an implementation detail.
+It is the architecture itself.</p>
+<p>The layers are:</p>
+<pre><code>josyn-foundation   — bedrock; stable forever; referenced by all, references nothing
+josyn-commons      — utility satellite; open for growth; referenced by all except foundation
+josyn-jap          — the protocol backbone; grows deliberately; existing members never break
+josyn-job-host     — open for evolution; the job developer's only door into the platform
+josyn-backend      — scheduler, session orchestrator, runtime owner; tip of an iceberg...
+josyn-platform     — this repo; documentation, decisions, architecture
+</code></pre>
+<p>One repository stands outside this graph entirely:</p>
+<pre><code>josyn-playground   — consumer; references the platform freely; the platform does not know it exists
+josyn-toolbox      — consumer; maintainer tooling; references the platform freely; the platform does not know it exists
+</code></pre>
+<p>These relationships are not suggestions. They are contracts.</p>
+<p>A dependency that runs in the wrong direction does not announce itself.
+It compiles. It ships. The tests pass. Life goes on — for a while.</p>
+<p>But the graph is now wrong. Future code grows around that mistake without knowing
+it is there. Decisions are made against an architecture that has already drifted from
+its intended shape. The drift compounds quietly, year after year, until the cost of
+correction becomes the cost of a rewrite.</p>
+<p>Think of it as cancer. The violation may never surface. You may ship it, maintain it,
+and retire the codebase — all without ever feeling the pain. Some systems survive their
+architectural cancers peacefully until their natural end. You might be lucky.
+Or the decline sets in slowly, then accelerates — increasing friction, failing abstractions,
+a rewrite that could have been avoided. All from one small, unreviewed dependency edge.</p>
+<p><strong>Protect the graph. Every edge in the wrong direction is a slow-burning fuse.</strong></p>
+<hr />
+<h2 id="foundation-is-forever">Foundation is forever</h2>
+<p><code>josyn-foundation</code> is the one layer that must never change shape.
+Its contracts are load-bearing. Every other repo in the platform stands on them.</p>
+<p>Adding to foundation is a major decision. Changing it is an event.
+Breaking it — even in a backward-compatible way — requires deliberate coordination
+across all consuming repos.</p>
+<p>When in doubt: foundation does not grow. The consuming layer adapts.</p>
+<hr />
+<h2 id="commons-is-not-foundation">Commons is not foundation</h2>
+<p><code>josyn-commons</code> exists precisely because not everything can be foundation.
+It is a growing toolbox — useful, domain-agnostic, always backward-compatible.</p>
+<p>The critical boundary: <strong>foundation never references commons.</strong>
+Commons may grow; foundation may not follow.</p>
+<p>When a helper in commons proves foundational, it does not move automatically.
+That is an architectural decision, documented in an ADR, made deliberately.</p>
+<hr />
+<h2 id="jap-is-the-protocol-backbone">JAP is the protocol backbone</h2>
+<p><code>josyn-jap</code> is the application protocol layer every job execution flows through.
+It sits on the JIP transport — which lives in foundation and is truly bedrock —
+and defines the high-level conversation between the scheduler world and the job world.</p>
+<p>That conversation is not frozen. Every new capability that job-host gains must have
+a voice in the protocol — JAP grows upward from the needs of the job world.</p>
+<p>That growth is healthy and necessary. But it must be deliberate:</p>
+<ul>
+<li>New members on <code>IJosynApplicationProtocol</code> require coordination with <code>josyn-job-host</code>,
+which implements the client side of every member.</li>
+<li>Existing members must never change semantics — they are active contracts in every
+running session.</li>
+<li>Changes to JAP's shared packages (<code>Jap.Shared.*</code>) ripple to both <code>JAPServer</code> and
+<code>JobHost</code> simultaneously. Review both sides before committing.</li>
+</ul>
+<p>The transport below all of this — the named pipes, the wire format, the session GUID
+convention — is JIP's territory, defined in foundation. That does not move.
+Everything JAP adds above it can grow.</p>
+<hr />
+<h2 id="job-host-is-the-job-developers-gateway">Job Host is the job developer's gateway</h2>
+<p><code>josyn-job-host</code> is the platform's handshake with the world outside.
+Job developers link it, follow the protocol, and write business logic.
+That is all they should need to do.</p>
+<p>Job Host is designed to evolve — more features, more relief for the job developer's daily work, more support
+to get things done, and more room for the person in front of the keyboard — to focus on the problem they actually came to solve.</p>
+<p>This evolution is healthy and expected. But every addition is a commitment to every job developer
+who links it.</p>
+<p>Two rules govern that evolution:</p>
+<ol>
+<li><p><strong>Stay lean.</strong> Job developers should encounter only what they need.
+No JAP concepts should leak into the consumer-facing surface.
+No abstractions that serve the platform's convenience at the expense of the consumer's clarity.</p>
+</li>
+<li><p><strong>No YAGNI.</strong> Add only for a concrete reason. Remove only with deliberate migration
+and deprecation — removals are expensive for a library that job authors bind to.</p>
+</li>
+</ol>
+<p>The <code>[JobEntryPoint]</code> attribute and <code>Core.Run(args)</code> are the entire surface most job authors
+will ever see. Protect their simplicity.</p>
+<hr />
+<h2 id="backend-is-its-own-world">Backend is its own world</h2>
+<p><code>josyn-backend</code> is listed in one line above. Do not let that mislead you.</p>
+<p>Its public role — scheduler, session orchestrator, runtime supervisor — is the narrow contract it exposes to the rest of the platform. Everything beneath that contract is backend territory: scheduling strategies, retry logic, concurrency models, lifecycle state machines, session store, persistence contracts, observability hooks, execution infrastructure...</p>
+<p>The backend is designed to evolve independently. Internals may deepen. Subsystems may emerge. That growth is acceptable — and expected — as long as it stays inside the boundary and does not widen the contract.</p>
+<p>Do not promote backend internals into shared abstractions without an explicit architectural decision. What lives in the backend, stays in the backend, until the boundary itself is deliberately changed.</p>
+<p>Purely internal backend decisions belong in backend-local documentation. Only decisions that affect the contract, the dependency graph, or other repos belong in a platform ADR.</p>
+<hr />
+<h2 id="playground-and-toolbox-are-not-the-platform">Playground and Toolbox are not the platform</h2>
+<p><code>josyn-playground</code> is a consumer repository. It may reference any platform repo it needs.
+The platform never references it back — not in NuGet, not via project references, not through any convention or discovery mechanism.</p>
+<p>This is the one rule that defines its place: <strong>the platform does not know josyn-playground exists.</strong></p>
+<p>Because of this, the playground carries none of the platform's obligations. It is not maintained to platform standards. Its code may be rough, experimental, or incomplete. That is not a deficiency — it is the point. It is the maintainer's space to demonstrate the living system, run exploratory integration scenarios, and develop new concepts before they earn a place in the real architecture.</p>
+<p>When something in the playground matures into a real feature, it moves — rewritten and reviewed — into the appropriate platform repo. The playground is not a permanent home.</p>
+<p><code>josyn-toolbox</code> shares the same constraint: the platform does not know it exists, and it may not be referenced by any platform repo. It differs in character — toolbox content is stable, operational tooling (deployment scripts, code generators, machine-sync utilities) rather than throwaway experiments. Both repos are pure consumers.</p>
+<hr />
+<h2 id="two-stability-philosophies">Two stability philosophies</h2>
+<p>Foundation stands apart — it has no philosophy, only permanence.
+Everything below it falls into one of two modes.</p>
+<p>The <strong>grows deliberately</strong> layers — <code>jap</code> and <code>job-host</code> — are expected to expand,
+but only additively and only with coordination. JAP's application protocol acquires
+new members as the platform matures; Job Host's consumer API grows as job developer
+needs become clear. In both cases: additions are decisions, existing members are
+commitments, and every change ripples to at least one other repo.</p>
+<p>The <strong>open-for-evolution</strong> layers — <code>backend</code> and <code>commons</code> — are expected to grow and
+deepen more freely. Commons accumulates domain-agnostic helpers; backend's internals
+may expand significantly behind its narrow contract. Growth is healthy — as long as it
+earns its place and stays inside the boundary.</p>
+<p>Knowing which mode a layer operates in tells you how much care a change deserves.</p>
+<hr />
+<h2 id="errors-are-values.always">Errors are values. Always.</h2>
+<p>JOSYN has one mechanism for expressing failure: <code>Result</code> / <code>Result&lt;T&gt;</code>.</p>
+<p>There are no exceptions propagating between layers.
+There are no silent swallows.
+There are no <code>try/catch</code> blocks above the bottom-of-call-graph boundary.</p>
+<p>Every failure is a value. Every failure can be inspected, propagated, and logged.
+This is not a preference. It is a platform contract.</p>
+<p>New code that throws across a layer boundary is a defect — regardless of how
+convenient it felt to write.</p>
+<hr />
+<h2 id="the-vocabulary-is-precise-by-design">The vocabulary is precise by design</h2>
+<p>Every word in the JOSYN vocabulary carries a specific meaning.
+&quot;Backend&quot; is not &quot;JAP&quot;. &quot;Foundation&quot; is not &quot;Commons&quot;. &quot;Platform&quot; is the whole.</p>
+<p>Using words loosely in documentation, commit messages, and code comments
+degrades the shared mental model that makes cross-repo work possible.</p>
+<p>When you introduce a new concept, give it a name, and document it.
+When a name no longer fits, change it — with an ADR.</p>
+<p>See <a href="architecture/naming-conventions.html">architecture/naming-conventions.md</a>.</p>
+<hr />
+<h2 id="decisions-are-documented">Decisions are documented</h2>
+<p>Every significant architectural choice in JOSYN lives in a decision record (ADR).</p>
+<p>An ADR is not bureaucracy. It is institutional memory. It answers the question
+&quot;why is it this way?&quot; — a question that will be asked, guaranteed, by the person
+who comes after you.</p>
+<p>When you make a decision that future maintainers will need to understand:
+write the ADR. Keep it short. State the context, the decision, and the consequences.</p>
+<p>See <a href="decisions/">decisions/</a>.</p>
+<hr />
+<h2 id="what-it-means-to-maintain-this-platform">What it means to maintain this platform</h2>
+<p>Maintaining JOSYN means more than writing code that compiles.</p>
+<p>It means keeping the architecture honest — catching the dependency that points
+the wrong way, the abstraction that leaks domain knowledge, the convenience
+that quietly couples two things that should not know about each other.</p>
+<p>It means reading the ADRs before making decisions that touch existing contracts.
+It means writing the ADR when you make a decision worth remembering.
+It means asking: <em>&quot;Does this addition earn its place?&quot;</em></p>
+<p>The platform you work in today was built carefully. The person who works in it
+after you deserves to inherit that care — not debt.</p>
+<hr />
+<h2 id="a-final-word">A final word</h2>
+<p>Good architecture is not a destination. It is a discipline.</p>
+<p>Every commit is either an investment or a withdrawal. Most are small. The balance
+compounds — in both directions.</p>
+<ul>
+<li><strong>Keep the graph clean.</strong></li>
+<li><strong>Keep the vocabulary precise.</strong></li>
+<li><strong>Keep the contracts honest.</strong></li>
+</ul>
+<p>That is the work.</p>
+
+    </article>
+  </main>
+  <script>
+    var toggle   = document.getElementById('nav-toggle');
+    var backdrop = document.getElementById('nav-backdrop');
+    function closeNav() { document.body.classList.remove('nav-open'); }
+    toggle.addEventListener('click', function() {
+      document.body.classList.toggle('nav-open');
+    });
+    backdrop.addEventListener('click', closeNav);
+    document.querySelectorAll('#sidebar a').forEach(function(a) {
+      a.addEventListener('click', closeNav);
+    });
+  </script>
+  <script src="../../mermaid.min.js"></script><script>mermaid.initialize({startOnLoad:false,theme:'dark'});mermaid.run({querySelector:'.mermaid'});</script>
+</body>
+</html>

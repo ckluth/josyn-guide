@@ -1,0 +1,53 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>JOSYN Guide — JOSYN Guide</title>
+  <link rel="stylesheet" href="site.css">
+</head>
+<body>
+  <button id="nav-toggle" aria-label="Toggle navigation">&#9776;</button>
+  <div id="nav-backdrop"></div>
+  <nav id="sidebar">
+    <div class="nav-header">JOSYN Guide</div>
+    <a href="index.html" class="nav-home active">JOSYN Guide</a>
+<details>
+  <summary class="nav-section">Start</summary>
+  <a href="start/index.html" class="nav-link">Overview</a>
+<details>
+    <summary class="nav-subsection">Josyn Platform</summary>
+    <a href="start/josyn-platform/index.html" class="nav-link">README</a>
+</details>
+</details>
+
+  </nav>
+  <main>
+    <article>
+      <h1 id="josyn-guide">JOSYN Guide</h1>
+<p>A curated guide to JOSYN.</p>
+<h2 id="browse-all-documentation">Browse all documentation</h2>
+<ul>
+<li><p><a href="search.html"><strong>Search</strong></a> — Filter all documents by title or summary.</p>
+</li>
+<li><p><a href="start/index.html"><strong>Start</strong></a></p>
+</li>
+</ul>
+
+    </article>
+  </main>
+  <script>
+    var toggle   = document.getElementById('nav-toggle');
+    var backdrop = document.getElementById('nav-backdrop');
+    function closeNav() { document.body.classList.remove('nav-open'); }
+    toggle.addEventListener('click', function() {
+      document.body.classList.toggle('nav-open');
+    });
+    backdrop.addEventListener('click', closeNav);
+    document.querySelectorAll('#sidebar a').forEach(function(a) {
+      a.addEventListener('click', closeNav);
+    });
+  </script>
+  <script src="mermaid.min.js"></script><script>mermaid.initialize({startOnLoad:false,theme:'dark'});mermaid.run({querySelector:'.mermaid'});</script>
+</body>
+</html>
