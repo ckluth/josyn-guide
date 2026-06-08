@@ -217,6 +217,7 @@ compounds — in both directions.</p>
     });
 
     var resizer = document.getElementById('sidebar-resizer');
+    resizer.addEventListener('contextmenu', function(e) { e.preventDefault(); });
     resizer.addEventListener('mousedown', function(e) {
       e.preventDefault();
       document.addEventListener('mousemove', onResize);
